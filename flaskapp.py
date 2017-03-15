@@ -17,6 +17,7 @@ app = Flask(__name__)
 app.config.from_pyfile('flaskapp.cfg')
 
 
+
 customer_list = {}
 db = Autoservice()
 
@@ -47,26 +48,26 @@ def handle_incoming_messages():
                         #check for attachments and reply with attachments
                         if "attachment" in  messaging_event["message"]:
                         	resp=send_image(sender_id)
-                        if messaging_event["message"]["text"] and db.check_active_session(sender_id) is True:
+                        if messaging_event["message"]["text"] :
                             user_dict[:sender_id]=sender_id
                             user_dict[:recipient_id]=recipient_id
                             user_dict[:status]='N'
                             user_dict[:seq_id]=messaging_event["message"]["seq"]
-                            db.record_session(user_dict)
+                            #db.record_session(user_dict)
                             message_text = messaging_event["message"]["text"]
                         	if check_for_greetings(message_text) is True:
                         		resp=respond(sender_id ,message_text)	
                                 user_dict[:status]='G'
-                                db.record_session(user_dict)
+                                #db.record_session(user_dict)
                         	if messaging_event["message"]["text"] == "Got it!!" and messaging_event["message"]["quick_reply"]["payload"] == "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GOTIT":
                         		gather_information(sender_id,messaging_event["message"]["seq"])
                                 user_dict[:status]='ACK'
-                                db.record_session(user_dict)
+                                #db.record_session(user_dict)
                         elif messaging_event["message"]["text"] and db.check_active_session(sender_id) is False:
                         	gather_information(sender_id,messaging_event["message"]["seq"],messaging_event["message"]["text"])
                         else:
                             user_dict[:status]='E'
-                            db.record_session(user_dict)
+                            #db.record_session(user_dict)
                         	resp=send_message(sender_id,"I didn't get you, lets try again!!")
                                                                                   
 except:
@@ -138,7 +139,7 @@ def send_ack(recipient_id):
     logging.info(resp.content)
     return resp
 
- def send_image(recipient_id):
+def send_image(recipient_id):
 	params = {
         "access_token": ACCESS_TOKEN
     }
@@ -161,12 +162,12 @@ def send_ack(recipient_id):
     logging.info(resp.content)
     return resp
 
- def gather_information(recipient_id,sequence,message_text):
+def gather_information(recipient_id,sequence,message_text):
  """lets begin gathering information,keep track of sequence"""
  	if  not customer_list:
  		for question in QUESTIONS:
  			send_message(recipient_id,question)
- 			customer_list.update('seq': sequence, 'user_id' : recipient_id)
+ 			customer_list.update({'seq': sequence, 'user_id' : recipient_id})
  			print customer_list
  	else:
         #check for nouns
